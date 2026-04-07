@@ -7,3 +7,5 @@ keyboard
 sounddevice
 soundfile
 numpy
+PyQt5
+PyQtWebEngine
