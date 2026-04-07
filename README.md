@@ -1,6 +1,6 @@
 # 🎵 Voice YT Music - Dashboard Moderno Controlado por Voz
 
-¡Bienvenido a **Voice YT Music**! Esta es una aplicación de escritorio premium diseñada para transformar tu experiencia con YouTube Music mediante comandos de voz y una interfaz minimalista inspirada en Spotify y Notion.
+¡Bienvenido a **Voice YT Music**! Esta es una aplicación de escritorio premium diseñada para transformar tu experiencia con YouTube Music mediante comandos de voz y una interfaz minimalista.
 
 ![Demo](Ado%20_%20Chando%20fanart%E2%99%A1.jpeg)
 
