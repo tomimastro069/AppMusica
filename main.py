@@ -462,9 +462,12 @@ class VoiceMusicApp(QMainWindow):
         self.browser_profile.setCachePath(cache_dir)
         
         # 3. Spoofing (Falsificar) el User-Agent para que Google permita el inicio de sesión
-        # TRUCO: A veces Chrome en Windows 10/11 es el más confiable para loguear hoy en día.
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+        # TRUCO: Los User-Agents de Android son a menudo los que mejor funcionan para loguearse en apps de escritorio.
+        user_agent = "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
         self.browser_profile.setHttpUserAgent(user_agent)
+        
+        # Inyectar el lenguaje para que Google no desconfíe
+        self.browser_profile.setHttpAcceptLanguage("es-ES,es;q=0.9,en;q=0.8")
         
         settings = self.browser_profile.settings()
         settings.setAttribute(QWebEngineSettings.PlaybackRequiresUserGesture, False)
