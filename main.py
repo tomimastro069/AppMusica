@@ -257,7 +257,8 @@ class VoiceMusicApp(QMainWindow):
         
         init_db()
         self.setup_ui()
-        self.apply_background()
+        # Darle un pequeño tiempo al layout para calcular el tamaño real antes de poner el fondo
+        QTimer.singleShot(50, self.apply_background)
         self.history_items = [] # Cache para responsividad
         self.load_history_cards()
         
@@ -278,10 +279,6 @@ class VoiceMusicApp(QMainWindow):
         central_widget = QWidget()
         central_widget.setObjectName("main_bg")
         self.setCentralWidget(central_widget)
-
-        # Label para fondo con escalado de alta calidad
-        self.bg_label = QLabel(central_widget)
-        self.bg_label.lower() # Mantener abajo
         
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -323,8 +320,18 @@ class VoiceMusicApp(QMainWindow):
         main_layout.addWidget(sidebar)
         
         # --- AREA CENTRAL (Páginas) ---
+        # Contenedor para que el fondo sea solo de la parte derecha
+        self.right_container = QWidget()
+        self.right_layout = QVBoxLayout(self.right_container)
+        self.right_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Label para fondo con escalado de alta calidad solo en la derecha
+        self.bg_label = QLabel(self.right_container)
+        
         self.stack = QStackedWidget()
-        main_layout.addWidget(self.stack, 1) # Toma todo el espacio restante
+        self.right_layout.addWidget(self.stack)
+        
+        main_layout.addWidget(self.right_container, 1)
         
         self.setup_dashboard()
         self.setup_player()
@@ -455,15 +462,25 @@ class VoiceMusicApp(QMainWindow):
         self.browser_profile.setCachePath(cache_dir)
         
         # 3. Spoofing (Falsificar) el User-Agent para que Google permita el inicio de sesión
-        # TRUCO: Usar Firefox engaña a Google para que no haga la verificación de seguridad obligatoria de Chromium embebido.
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0"
+        # TRUCO: A veces Chrome en Windows 10/11 es el más confiable para loguear hoy en día.
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
         self.browser_profile.setHttpUserAgent(user_agent)
         
         settings = self.browser_profile.settings()
         settings.setAttribute(QWebEngineSettings.PlaybackRequiresUserGesture, False)
+        settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
+        settings.setAttribute(QWebEngineSettings.ScrollAnimatorEnabled, True)
+        settings.setAttribute(QWebEngineSettings.WebGLEnabled, True)
+        settings.setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        settings.setAttribute(QWebEngineSettings.JavascriptCanOpenWindows, True)
+        settings.setAttribute(QWebEngineSettings.JavascriptCanAccessClipboard, True)
         
         # 4. Inyectar script para matar diálogos y onbeforeunload a nivel DOM (Doble protección)
         script_code = """
+        // Hacer que no parezca un navegador automatizado
+        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+        
         window.alert = function() { console.log("Alert bloqueado"); };
         window.confirm = function() { return true; };
         window.prompt = function() { return null; };
@@ -651,19 +668,21 @@ class VoiceMusicApp(QMainWindow):
         pixmap = QPixmap(bg_path)
         if pixmap.isNull(): return
 
-        # Lógica de "Aspect Ratio Fill" (Cover)
-        s = self.size()
+        # Lógica de "Aspect Ratio Fill" (Cover) referenciada al contenedor derecho
+        s = self.right_container.size()
+        if s.isEmpty(): return # Evitar crash si es demasiado chico
+        
         scaled_pixmap = pixmap.scaled(s, Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         
         # Recortar al centro
-        crop_rect = scaled_pixmap.rect()
         x = (scaled_pixmap.width() - s.width()) // 2
         y = (scaled_pixmap.height() - s.height()) // 2
         final_pixmap = scaled_pixmap.copy(x, y, s.width(), s.height())
         
         self.bg_label.setPixmap(final_pixmap)
         self.bg_label.setGeometry(0, 0, s.width(), s.height())
-        self.centralWidget().setStyleSheet("QWidget#main_bg { background-color: transparent; }")
+        self.bg_label.lower()
+        self.centralWidget().setStyleSheet("QWidget#main_bg { background-color: #0F0F0F; }")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

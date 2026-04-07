@@ -1,11 +1,11 @@
-customtkinter
-pystray
-Pillow
+PyQt5
+PyQtWebEngine
 ytmusicapi
 faster-whisper
 keyboard
 sounddevice
 soundfile
 numpy
-PyQt5
-PyQtWebEngine
+pywebview
+pywin32
+Pillow
